@@ -3,726 +3,907 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multi-Layer Phishing Detection & Risk Assessment — Part 1 Dashboard</title>
+  <title>SENTINEL — Multi-Layer Phishing Detection & Risk Assessment</title>
+  <meta name="description" content="SENTINEL is an advanced cybersecurity intelligence dashboard combining lexical URL feature extraction, five machine learning algorithms, and multi-layer risk assessment.">
+  <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-primary: #0a0e17;
-      --bg-secondary: #111827;
-      --bg-card: rgba(17, 24, 39, 0.7);
-      --border-color: rgba(255, 255, 255, 0.08);
-      --accent-blue: #3b82f6;
-      --accent-indigo: #6366f1;
-      --accent-green: #10b981;
-      --accent-red: #ef4444;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: var(--bg-primary);
-      color: var(--text-main);
-      font-family: var(--font-sans);
-      line-height: 1.6;
-      padding-bottom: 60px;
-    }
-
-    header {
-      background: linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
-      border-bottom: 1px solid var(--border-color);
-      padding: 40px 24px;
-      backdrop-filter: blur(12px);
-    }
-
-    .container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 9999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 12px;
-      background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-    }
-
-    h1 {
-      font-size: 2.4rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 10px;
-      background: linear-gradient(to right, #ffffff, #93c5fd);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .subtitle {
-      color: var(--text-muted);
-      font-size: 1.1rem;
-      max-width: 800px;
-    }
-
-    .nav-tabs {
-      display: flex;
-      gap: 12px;
-      margin-top: 24px;
-      flex-wrap: wrap;
-    }
-
-    .tab-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-color);
-      color: var(--text-muted);
-      padding: 8px 18px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-decoration: none;
-    }
-
-    .tab-btn:hover, .tab-btn.active {
-      background: rgba(59, 130, 246, 0.2);
-      border-color: var(--accent-blue);
-      color: #fff;
-    }
-
-    /* Grid Stats */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 20px;
-      margin: 32px 0;
-    }
-
-    .stat-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 20px;
-      backdrop-filter: blur(8px);
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(59, 130, 246, 0.4);
-    }
-
-    .stat-label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 600;
-    }
-
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 700;
-      margin: 8px 0 4px;
-      color: #fff;
-      font-family: var(--font-mono);
-    }
-
-    .stat-sub {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    /* Section */
-    .section-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin: 40px 0 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .section-title::before {
-      content: '';
-      display: inline-block;
-      width: 4px;
-      height: 24px;
-      background: var(--accent-blue);
-      border-radius: 2px;
-    }
-
-    /* Visualizations Gallery */
-    .viz-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: 24px;
-    }
-
-    .viz-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transition: all 0.2s ease;
-    }
-
-    .viz-card:hover {
-      border-color: rgba(99, 102, 241, 0.5);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-    }
-
-    .viz-img-wrap {
-      background: #ffffff;
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 240px;
-      cursor: pointer;
-    }
-
-    .viz-img-wrap img {
-      width: 100%;
-      height: auto;
-      border-radius: 6px;
-      object-fit: contain;
-    }
-
-    .viz-info {
-      padding: 16px;
-      background: var(--bg-secondary);
-      border-top: 1px solid var(--border-color);
-      flex: 1;
-    }
-
-    .viz-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: #fff;
-    }
-
-    .viz-desc {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
-
-    /* Live Feature Extractor Interactive Tool */
-    .extractor-box {
-      background: linear-gradient(145deg, rgba(17, 24, 39, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      border-radius: 14px;
-      padding: 24px;
-      margin: 24px 0;
-    }
-
-    .input-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .url-input {
-      flex: 1;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 12px 16px;
-      color: #fff;
-      font-family: var(--font-mono);
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .url-input:focus {
-      border-color: var(--accent-blue);
-    }
-
-    .extract-btn {
-      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-indigo) 100%);
-      color: #fff;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .extract-btn:hover {
-      opacity: 0.9;
-    }
-
-    .features-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      font-size: 0.88rem;
-    }
-
-    .features-table th, .features-table td {
-      padding: 10px 14px;
-      text-align: left;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .features-table th {
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.05em;
-    }
-
-    .features-table td:nth-child(2) {
-      font-family: var(--font-mono);
-      font-weight: 600;
-      color: #60a5fa;
-    }
-
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .modal.active {
-      display: flex;
-    }
-
-    .modal img {
-      max-width: 90vw;
-      max-height: 90vh;
-      border-radius: 8px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-      background: #fff;
-      padding: 8px;
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 20px;
-      right: 25px;
-      font-size: 32px;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    .files-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 14px;
-      margin-top: 16px;
-    }
-
-    .file-item {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-color);
-      padding: 14px 18px;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      text-decoration: none;
-      color: var(--text-main);
-      transition: all 0.2s;
-    }
-
-    .file-item:hover {
-      background: rgba(59, 130, 246, 0.1);
-      border-color: var(--accent-blue);
-    }
-
-    .file-name {
-      font-family: var(--font-mono);
-      font-size: 0.9rem;
-      color: #93c5fd;
-    }
-
-    .file-meta {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <header>
-    <div class="container">
-      <span class="badge">Part 1 Production Verified</span>
-      <h1>Multi-Layer Phishing Detection & Risk Assessment</h1>
-      <p class="subtitle">Complete implementation of dataset ingestion, verified label mapping, 28-feature URL extraction, comprehensive EDA, and leakage-free stratified dataset preparation.</p>
-      <div class="nav-tabs">
-        <a href="#stats" class="tab-btn active">Dataset Metrics</a>
-        <a href="#visualizations" class="tab-btn">EDA Visualizations (11)</a>
-        <a href="#live-tool" class="tab-btn">Interactive Extractor</a>
-        <a href="#files" class="tab-btn">Generated Outputs</a>
-        <a href="results/reports/eda_report.md" class="tab-btn" target="_blank">Full EDA Report</a>
-      </div>
-    </div>
-  </header>
-
-  <main class="container">
-
-    <!-- Key Metrics -->
-    <section id="stats">
-      <h2 class="section-title">Dataset & Pipeline Metrics</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total URLs Processed</div>
-          <div class="stat-value">200,000</div>
-          <div class="stat-sub">100% data retention (0 invalid / 0 nulls)</div>
+  <div class="app-container">
+    
+    <!-- ======================================================================
+         SIDEBAR NAVIGATION
+         ====================================================================== -->
+    <aside class="app-sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">Class Balance Ratio</div>
-          <div class="stat-value" style="color: var(--accent-green);">50% / 50%</div>
-          <div class="stat-sub">100,000 Legitimate (0) | 100,000 Phishing (1)</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Features Extracted</div>
-          <div class="stat-value" style="color: var(--accent-blue);">28</div>
-          <div class="stat-sub">Numeric lexical, host & structural features</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Extraction Speed</div>
-          <div class="stat-value" style="color: #a855f7;">16.3s</div>
-          <div class="stat-sub">Over 12,000 URLs / sec offline parsing</div>
+        <div class="brand-meta">
+          <span class="brand-title">SENTINEL</span>
+          <span class="brand-subtitle">Security Engine</span>
         </div>
       </div>
-    </section>
 
-    <!-- Interactive URL Extractor -->
-    <section id="live-tool">
-      <h2 class="section-title">Interactive Feature Extraction Sandbox</h2>
-      <div class="extractor-box">
-        <p style="color: var(--text-muted); font-size: 0.95rem;">Test any URL to inspect the exact 28 numeric features engineered for the classification pipeline:</p>
-        <div class="input-group">
-          <input type="text" id="test-url" class="url-input" value="http://login.secure-bank.update.com.attacker.net/verify/account?id=99&token=xyz" placeholder="Enter URL (with or without http/https)...">
-          <button class="extract-btn" onclick="runExtraction()">Extract Features</button>
-        </div>
-        <div id="feature-results" style="margin-top: 20px;">
-          <table class="features-table">
-            <thead>
-              <tr>
-                <th>Feature Name</th>
-                <th>Extracted Value</th>
-                <th>Feature Category</th>
-                <th>Security Signal</th>
-              </tr>
-            </thead>
-            <tbody id="features-tbody">
-              <!-- Populated dynamically via JS -->
-            </tbody>
-          </table>
+      <nav class="sidebar-nav">
+        <a href="#overview" class="nav-link active" data-route="overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span>Overview</span>
+        </a>
+
+        <a href="#scanner" class="nav-link" data-route="scanner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>
+          <span>URL Scanner</span>
+        </a>
+
+        <a href="#analytics" class="nav-link" data-route="analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          <span>Model Analytics</span>
+        </a>
+
+        <a href="#history" class="nav-link" data-route="history">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>Scan History</span>
+        </a>
+
+        <a href="#about" class="nav-link" data-route="about">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span>About Project</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="engine-status-card">
+          <div class="status-indicator-row">
+            <span class="pulse-dot pulse" id="engine-pulse-dot"></span>
+            <span id="engine-status-text">Online: Gradient Boosting</span>
+          </div>
+          <p class="status-caption">28-Feature offline extraction active. No external traffic dispatched.</p>
         </div>
       </div>
-    </section>
+    </aside>
 
-    <!-- EDA Visualizations Gallery -->
-    <section id="visualizations">
-      <h2 class="section-title">Exploratory Data Analysis Gallery (11 Publication Charts)</h2>
-      <div class="viz-grid">
-
-        <div class="viz-card">
-          <div class="viz-img-wrap" onclick="openModal('results/visualizations/01_class_counts.png')">
-            <img src="results/visualizations/01_class_counts.png" alt="01 Class Counts">
-          </div>
-          <div class="viz-info">
-            <div class="viz-title">1. Distribution of URL Classes</div>
-            <div class="viz-desc">Shows balanced representation: 100,000 Legitimate vs 100,000 Phishing samples.</div>
+    <!-- ======================================================================
+         MAIN APPLICATION VIEW CONTAINER
+         ====================================================================== -->
+    <main class="app-main">
+      
+      <!-- Sticky Topbar -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle-btn" id="menu-toggle" aria-label="Toggle navigation menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <div class="topbar-breadcrumb">
+            <span>SENTINEL</span>
+            <span>/</span>
+            <span class="breadcrumb-active" id="active-breadcrumb">System Overview</span>
           </div>
         </div>
 
-        <div class="viz-card">
-          <div class="viz-img-wrap" onclick="openModal('results/visualizations/02_class_distribution_percentage.png')">
-            <img src="results/visualizations/02_class_distribution_percentage.png" alt="02 Class Distribution">
+        <div class="topbar-right">
+          <div class="system-badge" id="system-badge">
+            <span>●</span> 28 Features Active
           </div>
-          <div class="viz-info">
-            <div class="viz-title">2. Class Balance Percentage</div>
-            <div class="viz-desc">Exact 50.0% / 50.0% split eliminates majority class bias during ML training.</div>
+          <button class="btn-header-scan" id="header-scan-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Scan New URL</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ====================================================================
+           VIEW 1: SYSTEM OVERVIEW
+           ==================================================================== -->
+      <section class="page-view active" id="view-overview">
+        
+        <!-- Hero Section -->
+        <div class="hero-banner">
+          <div class="hero-badge-strip">
+            <span class="hero-badge">Multi-Layer Architecture</span>
+            <span class="hero-badge">Zero-Traffic Lexical Analysis</span>
+            <span class="hero-badge">Ensemble Machine Learning</span>
+          </div>
+          <h1 class="hero-title">Know before you <span>click.</span></h1>
+          <p class="hero-desc">
+            Analyze suspicious URLs using machine learning and multi-layer risk assessment before interacting with unfamiliar links.
+          </p>
+        </div>
+
+        <!-- Centerpiece URL Scanner -->
+        <div class="scanner-container">
+          <div class="scanner-input-shell">
+            <svg class="scanner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <input type="text" id="overview-url-input" class="scanner-input" placeholder="Enter target URL (e.g., https://example.com/account/login)..." autocomplete="off" spellcheck="false">
+            
+            <div class="input-actions">
+              <button class="btn-input-utility btn-paste-input" type="button" title="Paste from clipboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>Paste</span>
+              </button>
+              <button class="btn-input-utility btn-clear-input" type="button" title="Clear input">
+                <span>Clear</span>
+              </button>
+              <button class="btn-analyze-scan" id="overview-analyze-btn" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>Analyze URL</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Shortcuts -->
+          <div class="scanner-shortcuts">
+            <span class="shortcut-label">Sample Lures:</span>
+            <button class="sample-pill" data-url="https://www.google.com/search?q=cybersecurity">Legitimate: Google Search</button>
+            <button class="sample-pill pill-danger" data-url="http://192.168.1.100/paypal-verify/login.php?session=expired">High Risk: Fake Bank IP Host</button>
+            <button class="sample-pill pill-danger" data-url="http://secure-login-account-update.tk/verify.html">High Risk: Squatting Domain</button>
+            <button class="sample-pill pill-warn" data-url="http://bit.ly/3xR9Qz-account-reset">Medium Risk: Shortener Link</button>
+          </div>
+
+          <!-- Scanner Loading -->
+          <div class="scanner-loading-state" id="overview-loading">
+            <div class="radar-spinner"></div>
+            <div class="loading-text">Extracting 28 Lexical Features & Inferring ML Model...</div>
+            <div class="loading-subtext">Evaluating structural heuristics without outbound network traffic</div>
+          </div>
+
+          <!-- Live Result Card -->
+          <div class="scan-result-card" id="overview-result">
+            <div class="result-main-grid">
+              <div>
+                <div class="result-badge-cluster">
+                  <span class="classification-badge badge-high">PHISHING</span>
+                  <span class="risk-level-tag">HIGH RISK LEVEL</span>
+                  <span class="risk-level-tag scan-time-badge">1.4 ms (offline)</span>
+                </div>
+                <div class="result-url-display">
+                  <span class="result-url-text">https://example.com</span>
+                  <button class="btn-input-utility btn-copy-url" type="button" style="padding:4px 8px;">Copy</button>
+                </div>
+              </div>
+
+              <div class="result-score-gauge">
+                <div class="gauge-numeric score-high">88</div>
+                <div class="gauge-caption">Composite Threat Score / 100</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">
+                  Model Probability: <span class="gauge-prob-val" style="color:var(--text-highlight);font-weight:700;">94.2%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="result-explanation-box">
+              <span class="result-explanation-text">The submitted URL exhibits high-risk indicators characteristic of credential-harvesting phishing campaigns.</span>
+            </div>
+
+            <div class="signals-split-grid">
+              <div class="signal-column">
+                <div class="signal-col-title title-warn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  <span>Suspicious Indicators & Warnings</span>
+                </div>
+                <ul class="signal-list warnings-signal-list"></ul>
+              </div>
+
+              <div class="signal-column">
+                <div class="signal-col-title title-safe">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                  <span>Reassuring Security Signals</span>
+                </div>
+                <ul class="signal-list safe-signal-list"></ul>
+              </div>
+            </div>
+
+            <!-- Expandable 28 Features -->
+            <button class="feature-drawer-toggle" type="button">
+              <span>Inspect All 28 Extracted Lexical Features</span>
+              <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="transition:transform 200ms;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="features-grid-drawer"></div>
+
+            <div class="result-disclaimer">
+              <strong>Security Advisory:</strong> URL structural analysis is an offline heuristics and ML decision-support mechanism. Never disclose passwords, banking credentials, or personal identity details on unverified web endpoints.
+            </div>
           </div>
         </div>
 
-        <div class="viz-card">
-          <div class="viz-img-wrap" onclick="openModal('results/visualizations/03_missing_values.png')">
-            <img src="results/visualizations/03_missing_values.png" alt="03 Missing Values">
+        <!-- Risk Summary Tier Cards -->
+        <div style="margin-bottom:32px;">
+          <div class="panel-header" style="margin-bottom:14px;">
+            <div class="panel-title-group">
+              <h2 class="panel-title">Multi-Layer Risk Classification Tiers</h2>
+            </div>
+            <span style="font-size:0.8rem;color:var(--text-muted);">Empirical Threshold Matrix</span>
           </div>
-          <div class="viz-info">
-            <div class="viz-title">3. Data Hygiene & Quality Audit</div>
-            <div class="viz-desc">Verifies zero nulls, zero malformed strings, and zero unparseable URLs.</div>
+
+          <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:18px;">
+            <div class="glass-panel" style="border-left:3px solid var(--risk-low);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <span class="classification-badge badge-low" style="font-size:0.78rem;">LOW RISK</span>
+                <span style="font-size:0.78rem;color:var(--text-muted);">&lt; 35% Model Prob</span>
+              </div>
+              <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.45;">
+                Standard registered domains adhering to canonical naming conventions with no critical structural anomalies or credential-harvesting lures.
+              </p>
+            </div>
+
+            <div class="glass-panel" style="border-left:3px solid var(--risk-medium);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <span class="classification-badge badge-medium" style="font-size:0.78rem;">MEDIUM RISK</span>
+                <span style="font-size:0.78rem;color:var(--text-muted);">35% – 70% Cutoff</span>
+              </div>
+              <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.45;">
+                Borderline statistical probabilities or legitimate-looking links that trigger heuristic warning signals (e.g., URL shorteners, multi-nested subdomains).
+              </p>
+            </div>
+
+            <div class="glass-panel" style="border-left:3px solid var(--risk-high);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <span class="classification-badge badge-high" style="font-size:0.78rem;">HIGH RISK</span>
+                <span style="font-size:0.78rem;color:var(--text-muted);">&ge; 70% Model Prob</span>
+              </div>
+              <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.45;">
+                High statistical confidence of phishing or explicit critical anomalies (naked IP address hosts, userinfo '@' symbol spoofing, urgent authentication keywords).
+              </p>
+            </div>
           </div>
         </div>
 
-        <div class="viz-card">
-          <div class="viz-img-wrap" onclick="openModal('results/visualizations/04_duplicate_analysis.png')">
-            <img src="results/visualizations/04_duplicate_analysis.png" alt="04 Duplicate Analysis">
+        <!-- Real Model Benchmark Grid -->
+        <div style="margin-bottom:32px;">
+          <div class="panel-header" style="margin-bottom:14px;">
+            <div class="panel-title-group">
+              <h2 class="panel-title">Production Model Performance</h2>
+              <span class="best-model-pill">Gradient Boosting Classifier</span>
+            </div>
+            <a href="#analytics" style="font-size:0.82rem;font-weight:600;">View 5-Model Benchmark &rarr;</a>
           </div>
-          <div class="viz-info">
-            <div class="viz-title">4. Duplicate & Conflict Audit</div>
-            <div class="viz-desc">Confirms 200,000 completely unique URLs with zero label contradictions.</div>
+
+          <div class="metrics-overview-grid">
+            <div class="glass-panel metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Testing Accuracy</span>
+                <div class="metric-icon-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                </div>
+              </div>
+              <div class="metric-value" id="metric-accuracy-val">96.95%</div>
+              <div class="metric-footer-note">Evaluated on 40,000 held-out test URLs</div>
+            </div>
+
+            <div class="glass-panel metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Precision on Phishing</span>
+                <div class="metric-icon-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </div>
+              </div>
+              <div class="metric-value" id="metric-precision-val">99.00%</div>
+              <div class="metric-footer-note">Only 0.96% False Positive Rate</div>
+            </div>
+
+            <div class="glass-panel metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Phishing Catch Rate</span>
+                <div class="metric-icon-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                </div>
+              </div>
+              <div class="metric-value" id="metric-recall-val">94.85%</div>
+              <div class="metric-footer-note">18,970 of 20,000 threats identified</div>
+            </div>
+
+            <div class="glass-panel metric-card">
+              <div class="metric-header">
+                <span class="metric-label">ROC-AUC Score</span>
+                <div class="metric-icon-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+                </div>
+              </div>
+              <div class="metric-value" id="metric-roc-val">0.9876</div>
+              <div class="metric-footer-note">Threshold-independent discrimination</div>
+            </div>
           </div>
         </div>
 
-        <div class="viz-card">
-          <div class="viz-img-wrap" onclick="openModal('results/visualizations/05_url_length_distribution.png')">
-            <img src="results/visualizations/05_url_length_distribution.png" alt="05 URL Length Distribution">
+        <!-- Recent Scans Section -->
+        <div class="glass-panel">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <h2 class="panel-title">Recent Session Audits</h2>
+            </div>
+            <a href="#history" style="font-size:0.82rem;font-weight:600;">View All History &rarr;</a>
           </div>
-          <div class="viz-info">
-            <div class="viz-title">5. Overall URL Length Distribution</div>
-            <div class="viz-desc">Histogram and KDE density curve across all 200,000 URLs.</div>
+
+          <div id="overview-recent-list"></div>
+          <div id="overview-recent-empty" class="empty-state-card" style="padding:24px 10px;">
+            <p style="font-size:0.88rem;color:var(--text-muted);">No URLs scanned in this session yet. Test one of the sample lures above.</p>
           </div>
         </div>
 
-        <div class="viz-card">
-          <div class="viz-img-wrap" onclick="openModal('results/visualizations/06_hostname_length_distribution.png')">
-            <img src="results/visualizations/06_hostname_length_distribution.png" alt="06 Hostname Length Distribution">
+      </section>
+
+      <!-- ====================================================================
+           VIEW 2: DEDICATED URL SCANNER PAGE
+           ==================================================================== -->
+      <section class="page-view" id="view-scanner">
+        
+        <div style="margin-bottom:24px;">
+          <h1 class="panel-title" style="font-size:1.8rem;margin-bottom:6px;">URL Risk Assessment Console</h1>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">
+            Inspect any web link in real-time. Features are derived strictly via lexical parsing without visiting the host or downloading remote payloads.
+          </p>
+        </div>
+
+        <div class="scanner-container">
+          <div class="scanner-input-shell">
+            <svg class="scanner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <input type="text" id="scanner-url-input" class="scanner-input" placeholder="Paste or type full URL here (e.g., https://...)..." autocomplete="off" spellcheck="false">
+            
+            <div class="input-actions">
+              <button class="btn-input-utility btn-paste-input" type="button" title="Paste from clipboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>Paste</span>
+              </button>
+              <button class="btn-input-utility btn-clear-input" type="button" title="Clear input">
+                <span>Clear</span>
+              </button>
+              <button class="btn-analyze-scan" id="scanner-analyze-btn" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>Analyze URL</span>
+              </button>
+            </div>
           </div>
-          <div class="viz-info">
-            <div class="viz-title">6. Hostname Length Distribution</div>
-            <div class="viz-desc">Highlights character length distribution of parsed domain/host names.</div>
+
+          <div class="scanner-shortcuts">
+            <span class="shortcut-label">Quick Samples:</span>
+            <button class="sample-pill" data-url="https://github.com/torvalds/linux">Legitimate: GitHub</button>
+            <button class="sample-pill pill-danger" data-url="http://192.168.1.50/secure-bank-login/account-verification?token=admin">High Risk: Raw IP & Lure Keywords</button>
+            <button class="sample-pill pill-danger" data-url="http://user@attacker-phishing.org/login">High Risk: Authority @ Symbol</button>
+            <button class="sample-pill pill-warn" data-url="http://paypal.account-verify.billing-update.pages.dev">Medium Risk: Multi-Level Subdomains</button>
+          </div>
+
+          <div class="scanner-loading-state" id="scanner-loading">
+            <div class="radar-spinner"></div>
+            <div class="loading-text">Extracting 28 Lexical Features & Inferring ML Model...</div>
+            <div class="loading-subtext">Evaluating structural heuristics without outbound network traffic</div>
+          </div>
+
+          <div class="scan-result-card" id="scanner-result">
+            <div class="result-main-grid">
+              <div>
+                <div class="result-badge-cluster">
+                  <span class="classification-badge badge-high">PHISHING</span>
+                  <span class="risk-level-tag">HIGH RISK LEVEL</span>
+                  <span class="risk-level-tag scan-time-badge">1.4 ms (offline)</span>
+                </div>
+                <div class="result-url-display">
+                  <span class="result-url-text">https://example.com</span>
+                  <button class="btn-input-utility btn-copy-url" type="button" style="padding:4px 8px;">Copy</button>
+                </div>
+              </div>
+
+              <div class="result-score-gauge">
+                <div class="gauge-numeric score-high">88</div>
+                <div class="gauge-caption">Composite Threat Score / 100</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">
+                  Model Probability: <span class="gauge-prob-val" style="color:var(--text-highlight);font-weight:700;">94.2%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="result-explanation-box">
+              <span class="result-explanation-text">Assessment complete.</span>
+            </div>
+
+            <div class="signals-split-grid">
+              <div class="signal-column">
+                <div class="signal-col-title title-warn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  <span>Suspicious Indicators & Warnings</span>
+                </div>
+                <ul class="signal-list warnings-signal-list"></ul>
+              </div>
+
+              <div class="signal-column">
+                <div class="signal-col-title title-safe">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                  <span>Reassuring Security Signals</span>
+                </div>
+                <ul class="signal-list safe-signal-list"></ul>
+              </div>
+            </div>
+
+            <button class="feature-drawer-toggle" type="button">
+              <span>Inspect All 28 Extracted Lexical Features</span>
+              <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="transition:transform 200ms;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="features-grid-drawer"></div>
+
+            <div class="result-disclaimer">
+              <strong>Security Advisory:</strong> URL structural analysis is an offline heuristics and ML decision-support mechanism. Never disclose passwords, banking credentials, or personal identity details on unverified web endpoints.
+            </div>
           </div>
         </div>
 
-        <div class="viz-card">
-          <div class="viz-img-wrap" onclick="openModal('results/visualizations/07_url_length_by_class.png')">
-            <img src="results/visualizations/07_url_length_by_class.png" alt="07 URL Length by Class">
+      </section>
+
+      <!-- ====================================================================
+           VIEW 3: MODEL ANALYTICS & BENCHMARKS
+           ==================================================================== -->
+      <section class="page-view" id="view-analytics">
+        
+        <div style="margin-bottom:24px;">
+          <h1 class="panel-title" style="font-size:1.8rem;margin-bottom:6px;">Model Analytics & Comparative Benchmarks</h1>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">
+            Empirical comparative analysis of 5 supervised machine learning algorithms evaluated across 40,000 held-out test URLs.
+          </p>
+        </div>
+
+        <!-- Comparative Metrics Table -->
+        <div class="glass-panel" style="margin-bottom:30px;">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <h2 class="panel-title">Algorithm Comparison Matrix</h2>
+            </div>
+            <span style="font-size:0.8rem;color:var(--text-muted);">Source: <code>results/reports/model_comparison.csv</code></span>
           </div>
-          <div class="viz-info">
-            <div class="viz-title">7. URL Length Comparison by Class</div>
-            <div class="viz-desc">Density and boxplots showing phishing URLs have significantly longer paths and queries.</div>
+
+          <div class="table-responsive-container">
+            <table class="sentinel-table">
+              <thead>
+                <tr>
+                  <th>Model Architecture</th>
+                  <th>Accuracy</th>
+                  <th>Precision</th>
+                  <th>Recall (Catch Rate)</th>
+                  <th>F1-Score</th>
+                  <th>ROC-AUC</th>
+                  <th>FPR</th>
+                  <th>Train Time</th>
+                </tr>
+              </thead>
+              <tbody id="model-comparison-tbody">
+                <tr class="highlight-best">
+                  <td><strong>Gradient Boosting</strong> <span class="best-model-pill">SELECTED BEST</span></td>
+                  <td><strong>96.95%</strong></td>
+                  <td>99.00%</td>
+                  <td>94.85%</td>
+                  <td>96.88%</td>
+                  <td>0.9876</td>
+                  <td>0.96%</td>
+                  <td>8.55s</td>
+                </tr>
+                <tr>
+                  <td><strong>Random Forest</strong></td>
+                  <td><strong>96.90%</strong></td>
+                  <td>98.99%</td>
+                  <td>94.77%</td>
+                  <td>96.84%</td>
+                  <td>0.9876</td>
+                  <td>0.97%</td>
+                  <td>2.88s</td>
+                </tr>
+                <tr>
+                  <td><strong>Decision Tree</strong></td>
+                  <td><strong>96.86%</strong></td>
+                  <td>98.99%</td>
+                  <td>94.69%</td>
+                  <td>96.79%</td>
+                  <td>0.9868</td>
+                  <td>0.97%</td>
+                  <td>0.30s</td>
+                </tr>
+                <tr>
+                  <td><strong>Support Vector Machine</strong></td>
+                  <td><strong>96.50%</strong></td>
+                  <td>98.48%</td>
+                  <td>94.45%</td>
+                  <td>96.42%</td>
+                  <td>0.9829</td>
+                  <td>1.46%</td>
+                  <td>11.67s</td>
+                </tr>
+                <tr>
+                  <td><strong>Logistic Regression</strong></td>
+                  <td><strong>96.49%</strong></td>
+                  <td>98.63%</td>
+                  <td>94.29%</td>
+                  <td>96.41%</td>
+                  <td>0.9828</td>
+                  <td>1.31%</td>
+                  <td>1.28s</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <div class="viz-card">
-          <div class="viz-img-wrap" onclick="openModal('results/visualizations/08_structural_features_by_class.png')">
-            <img src="results/visualizations/08_structural_features_by_class.png" alt="08 Structural Features by Class">
+        <!-- Technical Explanation Callout -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:30px;">
+          <div class="glass-panel">
+            <h3 style="font-size:1.05rem;font-weight:700;color:var(--text-highlight);margin-bottom:8px;">
+              Why Recall is Paramount in Phishing Defense
+            </h3>
+            <p style="font-size:0.86rem;color:var(--text-secondary);line-height:1.5;">
+              In cybersecurity threat detection, a False Negative (a malicious URL slipping past undetected) can lead directly to stolen corporate credentials, ransomware payloads, or financial loss. While raw accuracy measures total correctness, <strong>Recall (Catch Rate)</strong> explicitly quantifies what percentage of genuine attacks are caught (94.85% for Gradient Boosting).
+            </p>
           </div>
-          <div class="viz-info">
-            <div class="viz-title">8. Structural Features by Class</div>
-            <div class="viz-desc">Mean counts for dots, slashes, hyphens, and non-alphanumeric special characters.</div>
+
+          <div class="glass-panel">
+            <h3 style="font-size:1.05rem;font-weight:700;color:var(--text-highlight);margin-bottom:8px;">
+              Balancing Precision to Prevent Alert Fatigue
+            </h3>
+            <p style="font-size:0.86rem;color:var(--text-secondary);line-height:1.5;">
+              A detector that blocks legitimate domains causes severe disruption and alert fatigue for SOC analysts. The Gradient Boosting pipeline achieves <strong>99.00% Precision</strong> with only a <strong>0.96% False Positive Rate</strong> (192 out of 20,000 benign URLs flagged), ensuring reliable day-to-day operations.
+            </p>
           </div>
         </div>
 
-        <div class="viz-card">
-          <div class="viz-img-wrap" onclick="openModal('results/visualizations/09_correlation_heatmap.png')">
-            <img src="results/visualizations/09_correlation_heatmap.png" alt="09 Correlation Heatmap">
+        <!-- Visualizations Gallery -->
+        <div class="glass-panel">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <h2 class="panel-title">Model Evaluation Visualizations Gallery</h2>
+            </div>
+            <span style="font-size:0.8rem;color:var(--text-muted);">Click any card to inspect full-screen</span>
           </div>
-          <div class="viz-info">
-            <div class="viz-title">9. Feature Correlation Matrix Heatmap</div>
-            <div class="viz-desc">Pairwise Pearson correlation matrix with target label (label=1 phishing).</div>
+
+          <div class="gallery-grid">
+            <div class="gallery-card">
+              <div class="gallery-img-container">
+                <img src="results/visualizations/model_comparison.png" alt="Model Comparison Bar Chart" loading="lazy">
+              </div>
+              <div class="gallery-meta">
+                <div class="gallery-title">Model Comparison Metrics</div>
+                <div class="gallery-desc">Grouped bar comparison across Accuracy, Precision, Recall, F1, and ROC-AUC</div>
+              </div>
+            </div>
+
+            <div class="gallery-card">
+              <div class="gallery-img-container">
+                <img src="results/visualizations/roc_curves.png" alt="Overlaid ROC Curves" loading="lazy">
+              </div>
+              <div class="gallery-meta">
+                <div class="gallery-title">Overlaid ROC Curves</div>
+                <div class="gallery-desc">Receiver Operating Characteristic comparison with individual AUC values</div>
+              </div>
+            </div>
+
+            <div class="gallery-card">
+              <div class="gallery-img-container">
+                <img src="results/visualizations/confusion_matrix_gradient_boosting.png" alt="Gradient Boosting Confusion Matrix" loading="lazy">
+              </div>
+              <div class="gallery-meta">
+                <div class="gallery-title">Gradient Boosting Confusion Matrix</div>
+                <div class="gallery-desc">Evaluation matrix on 40,000 held-out samples: 18,970 TPs and 19,808 TNs</div>
+              </div>
+            </div>
+
+            <div class="gallery-card">
+              <div class="gallery-img-container">
+                <img src="results/visualizations/confusion_matrix_random_forest.png" alt="Random Forest Confusion Matrix" loading="lazy">
+              </div>
+              <div class="gallery-meta">
+                <div class="gallery-title">Random Forest Confusion Matrix</div>
+                <div class="gallery-desc">Ensemble evaluation heatmap showing 18,954 TPs and 19,807 TNs</div>
+              </div>
+            </div>
+
+            <div class="gallery-card">
+              <div class="gallery-img-container">
+                <img src="results/visualizations/09_correlation_heatmap.png" alt="Feature Correlation Heatmap" loading="lazy">
+              </div>
+              <div class="gallery-meta">
+                <div class="gallery-title">Feature Correlation Matrix</div>
+                <div class="gallery-desc">Pearson correlation coefficients across all 28 extracted URL features</div>
+              </div>
+            </div>
+
+            <div class="gallery-card">
+              <div class="gallery-img-container">
+                <img src="results/visualizations/01_class_counts.png" alt="Class Sample Distribution" loading="lazy">
+              </div>
+              <div class="gallery-meta">
+                <div class="gallery-title">Class Distribution Audit</div>
+                <div class="gallery-desc">Verified 100,000 benign vs 100,000 phishing samples (200k total)</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="viz-card">
-          <div class="viz-img-wrap" onclick="openModal('results/visualizations/10_extracted_features_distributions.png')">
-            <img src="results/visualizations/10_extracted_features_distributions.png" alt="10 Distributions">
+      </section>
+
+      <!-- ====================================================================
+           VIEW 4: SCAN HISTORY
+           ==================================================================== -->
+      <section class="page-view" id="view-history">
+        
+        <div style="margin-bottom:24px;">
+          <h1 class="panel-title" style="font-size:1.8rem;margin-bottom:6px;">Audit Scan History</h1>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">
+            Real-time local audit logs of URLs scanned during this browser session. Persisted locally via browser storage without transmitting data to external third parties.
+          </p>
+        </div>
+
+        <div class="glass-panel">
+          <div class="history-controls-bar">
+            <input type="text" id="history-search-input" class="history-search-input" placeholder="Search by URL substring...">
+
+            <div class="history-filter-pills">
+              <button class="filter-btn history-filter-btn active" data-filter="all">All Scans</button>
+              <button class="filter-btn history-filter-btn" data-filter="high">High Risk</button>
+              <button class="filter-btn history-filter-btn" data-filter="medium">Medium Risk</button>
+              <button class="filter-btn history-filter-btn" data-filter="low">Low Risk</button>
+              <button class="filter-btn history-filter-btn" data-filter="phishing">Phishing</button>
+              <button class="filter-btn history-filter-btn" data-filter="legitimate">Legitimate</button>
+            </div>
+
+            <div style="display:flex;gap:10px;">
+              <button class="btn-input-utility" id="btn-export-history" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span>Export JSON</span>
+              </button>
+              <button class="btn-input-utility" id="btn-clear-history" type="button" style="color:#fca5a5;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                <span>Clear</span>
+              </button>
+            </div>
           </div>
-          <div class="viz-info">
-            <div class="viz-title">10. Selected Extracted Features Distributions</div>
-            <div class="viz-desc">Comparative subplots for path length, query length, digits, and host lengths.</div>
+
+          <div id="history-table-wrapper" class="table-responsive-container">
+            <table class="sentinel-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Submitted URL</th>
+                  <th>Classification</th>
+                  <th>Risk Tier</th>
+                  <th>Threat Score</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-tbody"></tbody>
+            </table>
+          </div>
+
+          <div id="history-empty-state" class="empty-state-card" style="display:none;">
+            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <h3 style="font-size:1.1rem;color:var(--text-highlight);margin-bottom:6px;">No Scans Found</h3>
+            <p style="font-size:0.85rem;color:var(--text-muted);max-width:440px;margin:0 auto 16px;">
+              No URLs match your current search query or filter. Run a scan from the Overview or Scanner page to populate audit history.
+            </p>
+            <a href="#scanner" class="btn-header-scan">Open URL Scanner</a>
           </div>
         </div>
 
-        <div class="viz-card">
-          <div class="viz-img-wrap" onclick="openModal('results/visualizations/11_suspicious_patterns_by_class.png')">
-            <img src="results/visualizations/11_suspicious_patterns_by_class.png" alt="11 Suspicious Patterns">
-          </div>
-          <div class="viz-info">
-            <div class="viz-title">11. Subdomains & Suspicious Patterns</div>
-            <div class="viz-desc">Prevalence rates of suspicious lure keywords, IP hostnames, encoding, and shorteners.</div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW 5: ABOUT PROJECT & ARCHITECTURE
+           ==================================================================== -->
+      <section class="page-view" id="view-about">
+        
+        <div style="margin-bottom:24px;">
+          <h1 class="panel-title" style="font-size:1.8rem;margin-bottom:6px;">About SENTINEL</h1>
+          <p style="color:var(--text-secondary);font-size:0.92rem;">
+            Architecture, engineering methodology, feature extraction taxonomy, and collaborative contributor responsibilities.
+          </p>
+        </div>
+
+        <!-- 5-Layer Workflow Architecture -->
+        <div class="glass-panel" style="margin-bottom:28px;">
+          <h2 class="panel-title" style="margin-bottom:14px;">5-Stage Defense-in-Depth Pipeline</h2>
+          
+          <div style="display:grid;grid-template-columns:repeat(5, 1fr);gap:14px;">
+            <div style="background:rgba(0,0,0,0.3);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:14px;">
+              <span style="font-size:0.75rem;font-weight:700;color:var(--accent-cyan);">LAYER 1</span>
+              <h4 style="font-size:0.92rem;margin:4px 0 6px;">URL Intake</h4>
+              <p style="font-size:0.78rem;color:var(--text-muted);">Safely sanitizes and validates input string without making external network calls.</p>
+            </div>
+
+            <div style="background:rgba(0,0,0,0.3);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:14px;">
+              <span style="font-size:0.75rem;font-weight:700;color:var(--accent-cyan);">LAYER 2</span>
+              <h4 style="font-size:0.92rem;margin:4px 0 6px;">Lexical Engine</h4>
+              <p style="font-size:0.78rem;color:var(--text-muted);">Computes 28 structural, domain, and suspicious keyword signals in under 2 ms.</p>
+            </div>
+
+            <div style="background:rgba(0,0,0,0.3);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:14px;">
+              <span style="font-size:0.75rem;font-weight:700;color:var(--accent-cyan);">LAYER 3</span>
+              <h4 style="font-size:0.92rem;margin:4px 0 6px;">ML Classification</h4>
+              <p style="font-size:0.78rem;color:var(--text-muted);">Trained Gradient Boosting model outputs statistical class & continuous probability.</p>
+            </div>
+
+            <div style="background:rgba(0,0,0,0.3);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:14px;">
+              <span style="font-size:0.75rem;font-weight:700;color:var(--accent-cyan);">LAYER 4</span>
+              <h4 style="font-size:0.92rem;margin:4px 0 6px;">Risk Engine</h4>
+              <p style="font-size:0.78rem;color:var(--text-muted);">Applies cutoff thresholds and heuristic escalations for critical red flags.</p>
+            </div>
+
+            <div style="background:rgba(0,0,0,0.3);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:14px;">
+              <span style="font-size:0.75rem;font-weight:700;color:var(--accent-cyan);">LAYER 5</span>
+              <h4 style="font-size:0.92rem;margin:4px 0 6px;">Explainable Verdict</h4>
+              <p style="font-size:0.78rem;color:var(--text-muted);">Outputs plain-language indicators, threat score (0-100), and security advisories.</p>
+            </div>
           </div>
         </div>
 
-      </div>
-    </section>
+        <!-- Team Responsibilities -->
+        <div class="glass-panel" style="margin-bottom:28px;">
+          <h2 class="panel-title" style="margin-bottom:14px;">Engineering Team & System Contributions</h2>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div style="background:rgba(0,0,0,0.25);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:18px;">
+              <h3 style="font-size:1.1rem;color:var(--text-highlight);margin-bottom:4px;">Siddhi Shetkar</h3>
+              <span style="font-size:0.8rem;color:var(--accent-cyan);font-weight:600;">Data Engineering & Exploratory Data Analysis</span>
+              <ul style="margin-top:12px;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:0.84rem;color:var(--text-secondary);">
+                <li>• Dataset collection, cleaning, and quality audit across 200,000 URLs</li>
+                <li>• Label verification and bijective normalization (0 = Legitimate, 1 = Phishing)</li>
+                <li>• URL feature extraction engineering (28 numeric signals)</li>
+                <li>• Exploratory Data Analysis (EDA) and 11 empirical distribution figures</li>
+                <li>• Stratified train/test dataset preparation (160k train / 40k test)</li>
+              </ul>
+            </div>
 
-    <!-- Generated Files Section -->
-    <section id="files">
-      <h2 class="section-title">Generated Project Datasets & Part 1 Outputs</h2>
-      <div class="files-list">
-        <a href="dataset/processed/cleaned_dataset.csv" class="file-item" download>
-          <div>
-            <div class="file-name">cleaned_dataset.csv</div>
-            <div class="file-meta">Cleaned 200,000 URLs with verified labels</div>
+            <div style="background:rgba(0,0,0,0.25);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:18px;">
+              <h3 style="font-size:1.1rem;color:var(--text-highlight);margin-bottom:4px;">Sankeerthana Thoviti</h3>
+              <span style="font-size:0.8rem;color:var(--accent-cyan);font-weight:600;">Machine Learning, Risk Engine & Application Architecture</span>
+              <ul style="margin-top:12px;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:0.84rem;color:var(--text-secondary);">
+                <li>• Supervised ML model development (Gradient Boosting, Random Forest, DT, SVM, LR)</li>
+                <li>• Cybersecurity evaluation framework (Precision, Recall, ROC-AUC, FPR)</li>
+                <li>• Multi-layer risk assessment engine with heuristic escalation rules</li>
+                <li>• Serialization, automated testing suite (46 test cases, 100% pass rate)</li>
+                <li>• SENTINEL REST API backend and glassmorphism interface architecture</li>
+              </ul>
+            </div>
           </div>
-          <span style="color: var(--accent-blue); font-weight: 600;">11.0 MB &darr;</span>
-        </a>
-        <a href="dataset/processed/url_features.csv" class="file-item" download>
-          <div>
-            <div class="file-name">url_features.csv</div>
-            <div class="file-meta">Full dataset with all 28 features + label</div>
-          </div>
-          <span style="color: var(--accent-blue); font-weight: 600;">22.8 MB &darr;</span>
-        </a>
-        <a href="dataset/processed/splits/X_train.csv" class="file-item" download>
-          <div>
-            <div class="file-name">splits/X_train.csv</div>
-            <div class="file-meta">80% training feature matrix (160k rows)</div>
-          </div>
-          <span style="color: var(--accent-green); font-weight: 600;">9.6 MB &darr;</span>
-        </a>
-        <a href="dataset/processed/splits/X_test.csv" class="file-item" download>
-          <div>
-            <div class="file-name">splits/X_test.csv</div>
-            <div class="file-meta">20% testing feature matrix (40k rows)</div>
-          </div>
-          <span style="color: var(--accent-green); font-weight: 600;">2.4 MB &darr;</span>
-        </a>
-        <a href="dataset/processed/splits/y_train.csv" class="file-item" download>
-          <div>
-            <div class="file-name">splits/y_train.csv</div>
-            <div class="file-meta">Training labels (80k legit, 80k phish)</div>
-          </div>
-          <span style="color: var(--accent-green); font-weight: 600;">480 KB &darr;</span>
-        </a>
-        <a href="dataset/processed/splits/y_test.csv" class="file-item" download>
-          <div>
-            <div class="file-name">splits/y_test.csv</div>
-            <div class="file-meta">Testing labels (20k legit, 20k phish)</div>
-          </div>
-          <span style="color: var(--accent-green); font-weight: 600;">120 KB &darr;</span>
-        </a>
-        <a href="dataset/processed/feature_descriptions.md" class="file-item" target="_blank">
-          <div>
-            <div class="file-name">feature_descriptions.md</div>
-            <div class="file-meta">Data dictionary explaining all 28 features</div>
-          </div>
-          <span style="color: var(--accent-indigo); font-weight: 600;">View &rarr;</span>
-        </a>
-        <a href="results/reports/eda_report.md" class="file-item" target="_blank">
-          <div>
-            <div class="file-name">eda_report.md</div>
-            <div class="file-meta">Empirical security observations & findings</div>
-          </div>
-          <span style="color: var(--accent-indigo); font-weight: 600;">View &rarr;</span>
-        </a>
-      </div>
-    </section>
+        </div>
 
-  </main>
+        <!-- 28 Features Taxonomy -->
+        <div class="glass-panel" style="margin-bottom:28px;">
+          <h2 class="panel-title" style="margin-bottom:14px;">Extracted Feature Taxonomy (28 Features)</h2>
+          <div class="table-responsive-container">
+            <table class="sentinel-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Feature Name</th>
+                  <th>Type</th>
+                  <th>Security Rationale</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td rowspan="5" style="vertical-align:top;font-weight:600;color:var(--accent-cyan);">Length & Structural</td>
+                  <td><code>url_length</code></td>
+                  <td>Integer</td>
+                  <td>Obfuscation and nested redirection tracking targets elevate URL character count.</td>
+                </tr>
+                <tr>
+                  <td><code>hostname_length</code></td>
+                  <td>Integer</td>
+                  <td>Fraudulent hosts incorporate brand names or high-entropy random characters.</td>
+                </tr>
+                <tr>
+                  <td><code>num_dots</code>, <code>num_hyphens</code></td>
+                  <td>Integer</td>
+                  <td>Excessive dots indicate subdomains; hyphens are frequent in typosquatting.</td>
+                </tr>
+                <tr>
+                  <td><code>num_slashes</code>, <code>path_length</code></td>
+                  <td>Integer</td>
+                  <td>Deep directory trees often mask cloned login scripts on compromised servers.</td>
+                </tr>
+                <tr>
+                  <td><code>num_digits</code>, <code>num_special_characters</code></td>
+                  <td>Integer</td>
+                  <td>High digit/symbol density correlates with randomized malicious endpoints.</td>
+                </tr>
+                <tr>
+                  <td rowspan="4" style="vertical-align:top;font-weight:600;color:var(--accent-cyan);">Hostname & Domain</td>
+                  <td><code>has_ip_address</code></td>
+                  <td>Binary (0/1)</td>
+                  <td>Legitimate commercial sites use registered domains; raw IPs indicate threat nodes.</td>
+                </tr>
+                <tr>
+                  <td><code>num_subdomains</code>, <code>has_multiple_subdomains</code></td>
+                  <td>Integer / Binary</td>
+                  <td>Public Suffix List analysis detects subdomain nesting on free hosting platforms.</td>
+                </tr>
+                <tr>
+                  <td><code>is_https</code></td>
+                  <td>Binary (0/1)</td>
+                  <td>Correlated with other features; unencrypted HTTP is an elevated warning signal.</td>
+                </tr>
+                <tr>
+                  <td><code>has_unusual_port</code></td>
+                  <td>Binary (0/1)</td>
+                  <td>Non-standard ports (e.g., :8080, :8888) frequently indicate temporary attacker testing.</td>
+                </tr>
+                <tr>
+                  <td rowspan="4" style="vertical-align:top;font-weight:600;color:var(--accent-cyan);">Suspicious Indicators</td>
+                  <td><code>has_suspicious_keyword</code></td>
+                  <td>Binary (0/1)</td>
+                  <td>Authentication lures (<code>login</code>, <code>verify</code>, <code>account</code>, <code>password</code>, <code>banking</code>).</td>
+                </tr>
+                <tr>
+                  <td><code>has_url_shortener</code></td>
+                  <td>Binary (0/1)</td>
+                  <td>Shortening services (bit.ly, tinyurl, t.co) conceal destination domains from inspection.</td>
+                </tr>
+                <tr>
+                  <td><code>has_at_symbol</code></td>
+                  <td>Binary (0/1)</td>
+                  <td>Browsers treat strings before '@' as userinfo, redirecting to the host that follows.</td>
+                </tr>
+                <tr>
+                  <td><code>has_encoded_characters</code></td>
+                  <td>Binary (0/1)</td>
+                  <td>Hex percent-encoding (<code>%20</code>, <code>%2f</code>) masks deceptive directory segments.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-  <!-- Modal for full screen chart zoom -->
-  <div id="image-modal" class="modal" onclick="closeModal()">
-    <span class="modal-close">&times;</span>
-    <img id="modal-img" src="" alt="Zoomed Chart">
+        <!-- Technical Limitations & Future Improvements -->
+        <div class="glass-panel">
+          <h2 class="panel-title" style="margin-bottom:14px;">Limitations & Future Enhancements</h2>
+          <div style="font-size:0.88rem;color:var(--text-secondary);line-height:1.6;">
+            <p style="margin-bottom:12px;">
+              <strong>Lexical Boundary:</strong> Static URL analysis provides immediate, lightweight detection with zero outbound latency and no risk of payload execution. However, sophisticated attackers deploying legitimate cloud services (e.g., Cloudflare Workers, Firebase) or registered domains without obvious keywords cannot be diagnosed purely through lexical strings alone.
+            </p>
+            <p>
+              <strong>Future Roadmap:</strong> Production deployments should integrate external real-time signals, including:
+            </p>
+            <ul style="margin:8px 0 0 20px;">
+              <li>• Real-time DNS records, domain age, and WHOIS registration history.</li>
+              <li>• Headless sandboxed DOM inspection and visual screenshot brand matching.</li>
+              <li>• Native Chrome/Firefox browser extension integration for proactive user defense.</li>
+            </ul>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
   </div>
 
-  <script>
-    function openModal(src) {
-      document.getElementById('modal-img').src = src;
-      document.getElementById('image-modal').classList.add('active');
-    }
-    function closeModal() {
-      document.getElementById('image-modal').classList.remove('active');
-    }
+  <!-- ========================================================================
+       MODALS & FLOATING UTILITIES
+       ======================================================================== -->
+  
+  <!-- Image Lightbox Modal -->
+  <div class="lightbox-modal" id="lightbox-modal">
+    <div class="lightbox-content">
+      <button class="lightbox-close-btn" id="lightbox-close-btn" aria-label="Close dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <h3 id="lightbox-title" style="font-size:1.1rem;color:var(--text-highlight);margin-bottom:8px;">Inspection</h3>
+      <div class="lightbox-img-wrapper">
+        <img id="lightbox-img" src="" alt="Full view chart">
+      </div>
+    </div>
+  </div>
 
-    // Client-side implementation of exact URL feature extraction logic for live demonstration
-    const SHORTENERS = new Set(['bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'ow.ly', 'is.gd', 'buff.ly', 'cutt.ly', 'rb.gy']);
-    const SUSPICIOUS_KEYWORDS = ['login', 'verify', 'update', 'account', 'password', 'secure', 'banking', 'confirm', 'signin', 'security'];
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
 
-    function extractFeaturesClient(rawUrl) {
-      const u = (rawUrl || '').trim();
-      let scheme = '', hostname = '', path = '', query = '';
-      let hasScheme = u.includes('://');
-      let testUrl = hasScheme ? u : 'http://' + u;
-
-      try {
-        const parsed = new URL(testUrl);
-        scheme = hasScheme ? parsed.protocol.replace(':', '') : '';
-        hostname = parsed.hostname.toLowerCase();
-        path = parsed.pathname;
-        query = parsed.search.replace(/^\?/, '');
-      } catch (e) {
-        hostname = '';
-        path = u;
-      }
-
-      const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname) ? 1 : 0;
-      const subparts = hostname.split('.').filter(Boolean);
-      const numSubdomains = Math.max(0, subparts.length - 2);
-
-      return [
-        { name: 'url_length', val: u.length, cat: 'Length & Structure', desc: 'Total URL character length' },
-        { name: 'hostname_length', val: hostname.length, cat: 'Length & Structure', desc: 'Hostname character length' },
-        { name: 'path_length', val: path.length, cat: 'Length & Structure', desc: 'Path string length' },
-        { name: 'query_length', val: query.length, cat: 'Length & Structure', desc: 'Query string length' },
-        { name: 'num_dots', val: (u.match(/\./g) || []).length, cat: 'Length & Structure', desc: 'Dot count' },
-        { name: 'num_hyphens', val: (u.match(/-/g) || []).length, cat: 'Length & Structure', desc: 'Hyphen count (combosquatting)' },
-        { name: 'num_underscores', val: (u.match(/_/g) || []).length, cat: 'Length & Structure', desc: 'Underscore count' },
-        { name: 'num_slashes', val: (u.match(/\//g) || []).length, cat: 'Length & Structure', desc: 'Directory depth / slash count' },
-        { name: 'num_question_marks', val: (u.match(/\?/g) || []).length, cat: 'Length & Structure', desc: 'Query delimiter count' },
-        { name: 'num_equal_signs', val: (u.match(/=/g) || []).length, cat: 'Length & Structure', desc: 'Parameter key-value count' },
-        { name: 'num_ampersands', val: (u.match(/&/g) || []).length, cat: 'Length & Structure', desc: 'Parameter delimiter count' },
-        { name: 'num_at_symbols', val: (u.match(/@/g) || []).length, cat: 'Length & Structure', desc: 'Authority override symbol count' },
-        { name: 'num_percent_symbols', val: (u.match(/%/g) || []).length, cat: 'Length & Structure', desc: 'Percent-encoding hex count' },
-        { name: 'num_digits', val: (u.match(/\d/g) || []).length, cat: 'Length & Structure', desc: 'Digit count across URL' },
-        { name: 'num_special_characters', val: (u.match(/[^a-zA-Z0-9]/g) || []).length, cat: 'Length & Structure', desc: 'Total non-alphanumeric characters' },
-        { name: 'has_ip_address', val: isIp, cat: 'Hostname & Domain', desc: '1 if host is IP address, else 0' },
-        { name: 'hostname_has_digits', val: /\d/.test(hostname) ? 1 : 0, cat: 'Hostname & Domain', desc: '1 if host contains numbers' },
-        { name: 'hostname_has_hyphen', val: hostname.includes('-') ? 1 : 0, cat: 'Hostname & Domain', desc: '1 if host contains hyphens' },
-        { name: 'num_subdomains', val: numSubdomains, cat: 'Hostname & Domain', desc: 'Estimated subdomain layers' },
-        { name: 'has_multiple_subdomains', val: numSubdomains > 1 ? 1 : 0, cat: 'Hostname & Domain', desc: '1 if multi-level subdomains exist' },
-        { name: 'is_https', val: scheme.toLowerCase() === 'https' ? 1 : 0, cat: 'Hostname & Domain', desc: '1 if HTTPS protocol' },
-        { name: 'has_explicit_port', val: /:\d+/.test(u) ? 1 : 0, cat: 'Hostname & Domain', desc: '1 if explicit port designated' },
-        { name: 'has_unusual_port', val: /:(?!80|443)\d+/.test(u) ? 1 : 0, cat: 'Hostname & Domain', desc: '1 if non-80/443 port used' },
-        { name: 'num_query_parameters', val: query ? query.split('&').filter(Boolean).length : 0, cat: 'Hostname & Domain', desc: 'Parsed query parameter count' },
-        { name: 'has_url_shortener', val: SHORTENERS.has(hostname) ? 1 : 0, cat: 'Suspicious Pattern', desc: '1 if known URL shortener host' },
-        { name: 'has_suspicious_keyword', val: SUSPICIOUS_KEYWORDS.some(kw => u.toLowerCase().includes(kw)) ? 1 : 0, cat: 'Suspicious Pattern', desc: '1 if login/verify/update terms present' },
-        { name: 'has_encoded_characters', val: u.includes('%') ? 1 : 0, cat: 'Suspicious Pattern', desc: '1 if percent-encoded chars present' },
-        { name: 'has_at_symbol', val: u.includes('@') ? 1 : 0, cat: 'Suspicious Pattern', desc: '1 if @ symbol present' },
-      ];
-    }
-
-    function runExtraction() {
-      const url = document.getElementById('test-url').value;
-      const feats = extractFeaturesClient(url);
-      const tbody = document.getElementById('features-tbody');
-      tbody.innerHTML = '';
-      feats.forEach(f => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><code>${f.name}</code></td>
-          <td>${f.val}</td>
-          <td><span style="color: var(--text-muted);">${f.cat}</span></td>
-          <td style="color: var(--text-muted); font-size: 0.82rem;">${f.desc}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Initialize on load
-    runExtraction();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

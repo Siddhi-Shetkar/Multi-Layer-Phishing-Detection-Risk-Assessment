@@ -1,7 +1,7 @@
 """
 Module for feature dataset preparation, validation, and train/test splitting.
 
-Part of Part 1: Multi-Layer Phishing Detection & Risk Assessment.
+Multi-Layer Phishing Detection & Risk Assessment.
 """
 
 from pathlib import Path
@@ -15,7 +15,7 @@ from src.feature_extraction import FEATURE_COLUMNS, extract_features_from_datase
 
 FEATURE_DESCRIPTIONS_TEXT = """# URL Feature Descriptions
 
-This document provides a comprehensive dictionary of all features extracted for the **Multi-Layer Phishing Detection & Risk Assessment** system (Part 1).
+This document provides a comprehensive dictionary of all features extracted for the **Multi-Layer Phishing Detection & Risk Assessment** system.
 
 All features are strictly numeric (`int64` or `float64`) and derived without requiring internet connectivity or web page content execution.
 

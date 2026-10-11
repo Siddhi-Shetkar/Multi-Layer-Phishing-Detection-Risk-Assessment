@@ -1,7 +1,6 @@
 """
 Module for loading, validating, and inspecting URL phishing datasets.
-
-Part of Part 1: Multi-Layer Phishing Detection & Risk Assessment.
+Multi-Layer Phishing Detection & Risk Assessment.
 """
 
 import os

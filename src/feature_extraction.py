@@ -1,7 +1,6 @@
 """
 Module for extracting structural, lexical, host, and suspicious pattern features from URLs.
-
-Part of Part 1: Multi-Layer Phishing Detection & Risk Assessment.
+Multi-Layer Phishing Detection & Risk Assessment.
 """
 
 import ipaddress

@@ -1,7 +1,6 @@
 """
 Module for Exploratory Data Analysis (EDA) visualizations and report generation.
-
-Part of Part 1: Multi-Layer Phishing Detection & Risk Assessment.
+Multi-Layer Phishing Detection & Risk Assessment.
 """
 
 from pathlib import Path
@@ -97,7 +96,7 @@ def generate_eda_visualizations(
     # -------------------------------------------------------------
     fig, ax = plt.subplots(figsize=(6, 6))
     pcts = [n_legit / total_samples * 100, n_phish / total_samples * 100]
-    wedges, texts, autotexts = ax.pie(
+    pie_result = ax.pie(
         pcts,
         labels=["Legitimate (0)", "Phishing (1)"],
         autopct='%1.1f%%',
@@ -106,6 +105,7 @@ def generate_eda_visualizations(
         wedgeprops=dict(width=0.4, edgecolor='white', linewidth=2),
         textprops=dict(fontsize=12, fontweight='bold')
     )
+    autotexts = pie_result[2] if len(pie_result) > 2 else []
     for at in autotexts:
         at.set_fontsize(13)
         at.set_fontweight('bold')
@@ -410,11 +410,11 @@ def generate_eda_report(
     top_pos_corr = corrs.head(5).to_dict()
     top_neg_corr = corrs.tail(5).to_dict()
 
-    report_content = f"""# Exploratory Data Analysis Report: Multi-Layer Phishing Detection & Risk Assessment (Part 1)
+    report_content = f"""# Exploratory Data Analysis Report: Multi-Layer Phishing Detection & Risk Assessment
 
 **Execution Date:** 2026-10-11  
 **Dataset Analyzed:** `phishing_url_dataset.csv`  
-**Pipeline Stage:** Part 1 (Data Inspection, Preprocessing, Feature Engineering & Dataset Preparation)
+**Pipeline Stage:** Data Engineering, Feature Extraction & Statistical Analysis
 
 ---
 
@@ -516,11 +516,11 @@ While static lexical and structural URL features are essential, lightweight, and
 2. **Shortener & Redirect Redirection:** Shortened URLs (e.g., `bit.ly`, `tinyurl`) obscure the final destination. Without following HTTP redirect chains (which requires network execution), static URL analysis cannot inspect the true destination.
 3. **Abuse of Legitimate Cloud Infrastructure:** Attackers increasingly deploy phishing forms on trusted platforms (`pages.dev`, `workers.dev`, `firebaseapp.com`, `github.io`, `sharepoint.com`). Because the domain is legitimate, domain-reputation-only systems fail unless deep path and lexical signals are combined.
 4. **Targeted Zero-Day Lures:** Newly registered domains (NRDs) that mimic benign naming schemes without explicit keywords can evade basic heuristic keyword lists.
-5. **Necessity of Multi-Layer Architecture:** These limitations underscore the necessity of Part 2, where machine learning ensembles, content analysis, and multi-layer risk scoring provide defense-in-depth.
+5. **Necessity of Multi-Layer Architecture:** These limitations underscore the necessity of multi-layer defense, where machine learning ensembles, heuristic indicators, and configurable risk scoring provide defense-in-depth.
 
 ---
 
-*Report generated automatically by the Part 1 pipeline.*
+*Report generated automatically by the data engineering pipeline.*
 """
 
     with open(out_p, 'w', encoding='utf-8') as f:

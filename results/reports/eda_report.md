@@ -1,8 +1,8 @@
-# Exploratory Data Analysis Report: Multi-Layer Phishing Detection & Risk Assessment (Part 1)
+# Exploratory Data Analysis Report: Multi-Layer Phishing Detection & Risk Assessment
 
 **Execution Date:** 2026-10-11  
 **Dataset Analyzed:** `phishing_url_dataset.csv`  
-**Pipeline Stage:** Part 1 (Data Inspection, Preprocessing, Feature Engineering & Dataset Preparation)
+**Pipeline Stage:** Data Engineering, Feature Extraction & Statistical Analysis
 
 ---
 
@@ -105,8 +105,8 @@ While static lexical and structural URL features are essential, lightweight, and
 2. **Shortener & Redirect Redirection:** Shortened URLs (e.g., `bit.ly`, `tinyurl`) obscure the final destination. Without following HTTP redirect chains (which requires network execution), static URL analysis cannot inspect the true destination.
 3. **Abuse of Legitimate Cloud Infrastructure:** Attackers increasingly deploy phishing forms on trusted platforms (`pages.dev`, `workers.dev`, `firebaseapp.com`, `github.io`, `sharepoint.com`). Because the domain is legitimate, domain-reputation-only systems fail unless deep path and lexical signals are combined.
 4. **Targeted Zero-Day Lures:** Newly registered domains (NRDs) that mimic benign naming schemes without explicit keywords can evade basic heuristic keyword lists.
-5. **Necessity of Multi-Layer Architecture:** These limitations underscore the necessity of Part 2, where machine learning ensembles, content analysis, and multi-layer risk scoring provide defense-in-depth.
+5. **Necessity of Multi-Layer Architecture:** These limitations underscore the necessity of multi-layer defense, where machine learning ensembles, heuristic indicators, and configurable risk scoring provide defense-in-depth.
 
 ---
 
-*Report generated automatically by the Part 1 pipeline.*
+*Report generated automatically by the data engineering pipeline.*
